@@ -51,7 +51,7 @@ def try_to_acquire_archive_contents(pull_from: str, extract_to: Path) -> bool:
             extract_to.mkdir(parents=True, exist_ok=True)
             print("Accessing the archive in the adress...")
             with fsspec.open(pull_from_with_cache, "rb") as archive:
-                with NamedTemporaryFile("ab") as tmp:
+                with NamedTemporaryFile("ab", delete=False) as tmp:
                     print("Reading the archive in the adress...")
                     while True:
                         # Read every 100 MB for large corpus.
@@ -62,10 +62,12 @@ def try_to_acquire_archive_contents(pull_from: str, extract_to: Path) -> bool:
                             break
                     tmp.seek(0)
                     print("Read.")
+                    temp_file_path = tmp.name
 
                     print("Extracting...")
-                    extract_archive(tmp.name, str(extract_to))
-                    print("Extracted.")
+                extract_archive(temp_file_path, str(extract_to))
+                print("Extracted.")
+                os.remove(temp_file_path)
             return True
 
 

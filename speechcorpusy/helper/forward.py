@@ -44,13 +44,17 @@ def forward_from_gdrive(id_gdrive_contents: str, target_adress: str, size_gb: fl
 
     adress_cache_target = f"simplecache::{target_adress}"
     # TempFile for garbage-less forwarding
-    with NamedTemporaryFile("w+b") as tmp:
-        download_gdrive_large_contents(id_gdrive_contents, Path(tmp.name), size_gb)
+    with NamedTemporaryFile(delete=False) as tmp:
+        temp_file_path = tmp.name
+       
+    download_gdrive_large_contents(id_gdrive_contents, Path(temp_file_path), size_gb)
+    with open(temp_file_path, mode="rb") as tmp:
         tmp.seek(0)
         print("Forward: Writing to the adress...")
         with fsspec.open(adress_cache_target, "wb") as archive:
             archive.write(tmp.read())
         print("Forward: Written.")
+    os.remove(temp_file_path)
 
 
 if __name__ == "__main__":
